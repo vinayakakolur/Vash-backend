@@ -3,6 +3,7 @@ const router = express.Router();
 const authenticateUser = require("../middleware/auth");
 const { getAIResponse } = require("../services/openrouter");
 const { db } = require("../firebase/firebase_admin");
+const CREDIT_COST = 5;
 
 
 router.post("/", authenticateUser, async (req, res) => {
@@ -54,7 +55,7 @@ router.post("/", authenticateUser, async (req, res) => {
     const reply = await getAIResponse(messages, mode);
 
     await userRef.update({
-      credits: credits - 1,
+      credits: credits - CREDIT_COST,
     });
 
     console.log("Credits left:", credits - 1);

@@ -6,6 +6,4 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-module.exports = {
-  auth: admin.auth(),
-};
+module.exports = admin;

@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
-
+const authenticateUser = require("../middleware/auth");
 const { getAIResponse } = require("../services/openrouter");
 
-router.post("/", async (req, res) => {
-
+router.post("/", authenticateUser, async (req, res) => {
+  
+  console.log("Authenticated user:", req.user.uid);
+  console.log("Email:", req.user.email);
   console.log("===== NEW REQUEST =====");
   console.log(req.body);
 

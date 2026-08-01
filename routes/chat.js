@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const authenticateUser = require("../middleware/auth");
 const { getAIResponse } = require("../services/openrouter");
+const { db } = require("../firebase/firebase_admin");
+
 
 router.post("/", authenticateUser, async (req, res) => {
   
@@ -16,6 +18,28 @@ router.post("/", authenticateUser, async (req, res) => {
 
     const { messages, mode } = req.body;
 
+    const userRef = db.collection("users").doc(req.user.uid);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    const userData = userDoc.data();
+    const credits = userData.credits ?? 0;
+
+    console.log("Credits:", credits);
+
+    if (credits <= 0) {
+      return res.status(403).json({
+        success: false,
+        error: "No credits remaining",
+      });
+    } 
+
     console.log("Step 2: Messages =", messages);
 
     if (!messages || !Array.isArray(messages)) {
@@ -28,6 +52,12 @@ router.post("/", authenticateUser, async (req, res) => {
     console.log("Step 3: Calling OpenRouter...");
 
     const reply = await getAIResponse(messages, mode);
+
+    await userRef.update({
+      credits: credits - 1,
+    });
+
+    console.log("Credits left:", credits - 1);
 
     console.log("Step 4: Reply =", reply);
 
